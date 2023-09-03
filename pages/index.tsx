@@ -98,7 +98,7 @@ const Home: NextPage = () => {
             </Button>
           </Center>
           <Text weight={500} fz="xl">
-            Wallet
+            Mint
           </Text>
           <Center>
             <Button
