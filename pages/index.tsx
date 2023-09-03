@@ -1,13 +1,5 @@
-import {
-  Badge,
-  Button,
-  Card,
-  Center,
-  Container,
-  Group,
-  Image,
-  Text,
-} from "@mantine/core";
+import { Button, Card, Center, Container, Text } from "@mantine/core";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { computeAddress } from "ethers";
 import type { NextPage } from "next";
 import Link from "next/link";
@@ -16,16 +8,7 @@ import {
   getPublicKeysFromScan,
   getSignatureFromScan,
 } from "pbt-chip-client/kong";
-import {
-  WagmiConfig,
-  configureChains,
-  createConfig,
-  useAccount,
-  usePublicClient,
-} from "wagmi";
-import { sepolia } from "viem/chains";
-import { InjectedConnector } from "wagmi/connectors/injected";
-import { publicProvider } from "wagmi/providers/public";
+import { useAccount, useConnect, usePublicClient } from "wagmi";
 
 type ChipKeys =
   | {
@@ -39,10 +22,13 @@ type ChipKeys =
   | undefined;
 
 const Home: NextPage = () => {
+  const { openConnectModal } = useConnectModal();
+
   const provider = usePublicClient({
     chainId: 11155111,
   });
   const { address, isConnected } = useAccount();
+  const { connect } = useConnect();
   const [chipAddress, setChipAddress] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | undefined>(undefined);
   const [keys, setKeys] = useState<ChipKeys | undefined>(undefined);
@@ -70,6 +56,10 @@ const Home: NextPage = () => {
       hash: blockHash,
     });
     setSignature(signatureScan);
+  }
+
+  async function connected() {
+    console.log("connected");
   }
 
   return (
@@ -105,6 +95,20 @@ const Home: NextPage = () => {
               onClick={() => scanChip()}
             >
               Scan Chip
+            </Button>
+          </Center>
+          <Text weight={500} fz="xl">
+            Wallet
+          </Text>
+          <Center>
+            <Button
+              variant="light"
+              color="blue"
+              mt="md"
+              radius="md"
+              onClick={isConnected ? connected : openConnectModal}
+            >
+              Mint
             </Button>
           </Center>
         </Card>

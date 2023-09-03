@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import "@rainbow-me/rainbowkit/styles.css";
+import { useState } from "react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import {
@@ -8,8 +9,8 @@ import {
 } from "@mantine/core";
 import Layout from "./layout";
 import { WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
-import { InjectedConnector } from "wagmi/connectors/injected";
 import { publicProvider } from "wagmi/providers/public";
+import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 
 export default function App(props: AppProps) {
   const { Component, pageProps } = props;
@@ -21,9 +22,16 @@ export default function App(props: AppProps) {
     [sepolia],
     [publicProvider()]
   );
-  const config = createConfig({
+
+  const { connectors } = getDefaultWallets({
+    appName: "RainbowKit App",
+    projectId: "YOUR_PROJECT_ID",
+    chains,
+  });
+
+  const wagmiConfig = createConfig({
     autoConnect: true,
-    connectors: [new InjectedConnector({ chains })],
+    connectors,
     publicClient,
     webSocketPublicClient,
   });
@@ -47,10 +55,12 @@ export default function App(props: AppProps) {
           withNormalizeCSS
           theme={{ colorScheme }}
         >
-          <WagmiConfig config={config}>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
+          <WagmiConfig config={wagmiConfig}>
+            <RainbowKitProvider chains={chains}>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </RainbowKitProvider>
           </WagmiConfig>
         </MantineProvider>
       </ColorSchemeProvider>
