@@ -79,7 +79,8 @@ contract PBT is ERC721A, IPBT, Ownable {
         );
         TokenChip storage tokenChip = tokenChips[chipAddress];
 
-        if (tokenChip.chipAddress != chipAddress) revert UnauthorizedToMint();
+        if (tokenChip.tokenId == 0 && tokenChip.chipAddress == address(0))
+            revert UnauthorizedToMint();
         if (tokenChip.tokenId != 0) revert ChipHasBeenMinted();
 
         tokenChips[chipAddress].tokenId = _nextTokenId();
