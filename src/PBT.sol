@@ -24,7 +24,7 @@ contract PBT is ERC721A, IPBT, Ownable {
         uint256 tokenId;
     }
 
-    mapping(address => TokenChip) tokenChips;
+    mapping(address => TokenChip) private tokenChips;
 
     constructor() ERC721A("PBT", "PBT") {}
 
