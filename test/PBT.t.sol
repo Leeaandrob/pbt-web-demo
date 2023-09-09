@@ -3,12 +3,12 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "../src/PBT.sol";
+import "../src/PBTMock.sol";
 
 contract PBTTest is Test {
     event PBTMint(uint256 indexed tokenId, address indexed chipAddress);
 
-    PBT public pbt;
+    PBTMock public pbt;
     uint256 public blockNumber = 10;
     address public owner = vm.addr(999);
     address public user1 = vm.addr(1);
@@ -16,9 +16,11 @@ contract PBTTest is Test {
     address public chipAddress1 = vm.addr(chip1);
     uint256 public chip2 = 102;
     address public chipAddress2 = vm.addr(chip2);
+    uint256 public chip3 = 103;
+    address public chipAddress3 = vm.addr(chip3);
 
     function setUp() public {
-        pbt = new PBT();
+        pbt = new PBTMock();
         pbt.transferOwnership(owner);
     }
 
@@ -39,6 +41,24 @@ contract PBTTest is Test {
         uint256 chipAddrNum
     ) private pure returns (bytes memory signature) {
         return _createSignature(abi.encodePacked(payload), chipAddrNum);
+    }
+
+    function test_seedChipAddresses() public {
+        address[] memory chipAddresses = new address[](3);
+        chipAddresses[0] = chipAddress1;
+        chipAddresses[1] = chipAddress2;
+        chipAddresses[2] = chipAddress3;
+        vm.prank(owner);
+        pbt.seedChipAddresses(chipAddresses);
+
+        address[] memory seededChipAddresses = new address[](3);
+        for (uint256 i = 0; i < chipAddresses.length; ++i) {
+            seededChipAddresses[i] = pbt
+                .getTokenChip(chipAddresses[i])
+                .chipAddress;
+        }
+
+        assertEq(chipAddresses, seededChipAddresses);
     }
 
     function test_mintChip_RevertWhen_chipHasNotBeenSeeded() public {
