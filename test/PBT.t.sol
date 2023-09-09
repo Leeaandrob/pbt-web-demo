@@ -6,6 +6,8 @@ import "forge-std/console.sol";
 import "../src/PBT.sol";
 
 contract PBTTest is Test {
+    event PBTMint(uint256 indexed tokenId, address indexed chipAddress);
+
     PBT public pbt;
     uint256 public blockNumber = 10;
     address public owner = vm.addr(999);
@@ -67,7 +69,7 @@ contract PBTTest is Test {
         bytes memory signature = _createSignature(payload, chip1);
         pbt.mintChip(signature, blockNumber);
 
-        // increase the block number, attempt to mint the second chip
+        // increase the block number, attempt to mint the same chip
         vm.roll(blockNumber + 20);
         bytes memory secondMintPayload = abi.encodePacked(
             user1,
@@ -78,6 +80,41 @@ contract PBTTest is Test {
             chip1
         );
         vm.expectRevert(ChipHasBeenMinted.selector);
+        pbt.mintChip(secondMintSignature, blockNumber + 10);
+    }
+
+    function test_mintChip() public {
+        vm.roll(blockNumber + 10);
+
+        address[] memory chipAddresses = new address[](1);
+        chipAddresses[0] = chipAddress1;
+        vm.prank(owner); // seed chip as the owner because there's an `onlyOwner` modifier
+        pbt.seedChipAddresses(chipAddresses);
+
+        // mint the first chip as user1
+        vm.startPrank(user1);
+        bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
+        bytes memory signature = _createSignature(payload, chip1);
+        pbt.mintChip(signature, blockNumber);
+        vm.stopPrank();
+
+        chipAddresses[0] = chipAddress2;
+        vm.prank(owner); // seed chip as the owner because there's an `onlyOwner` modifier
+        pbt.seedChipAddresses(chipAddresses);
+
+        // increase the block number, attempt to mint the second chip
+        vm.roll(blockNumber + 20);
+        vm.startPrank(user1);
+        bytes memory secondMintPayload = abi.encodePacked(
+            user1,
+            blockhash(blockNumber + 10)
+        );
+        bytes memory secondMintSignature = _createSignature(
+            secondMintPayload,
+            chip2
+        );
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(2, user1);
         pbt.mintChip(secondMintSignature, blockNumber + 10);
     }
 }
