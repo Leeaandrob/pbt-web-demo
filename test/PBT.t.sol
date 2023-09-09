@@ -7,6 +7,11 @@ import "../src/PBTMock.sol";
 
 contract PBTTest is Test {
     event PBTMint(uint256 indexed tokenId, address indexed chipAddress);
+    event PBTChipRemapping(
+        uint256 indexed tokenId,
+        address indexed oldChipAddress,
+        address indexed newChipAddress
+    );
 
     PBTMock public pbt;
     uint256 public blockNumber = 10;
@@ -61,7 +66,83 @@ contract PBTTest is Test {
         assertEq(chipAddresses, seededChipAddresses);
     }
 
-    function test_mintChip_RevertWhen_chipHasNotBeenSeeded() public {
+    function test_updateChipAddresses_RevertWhen_MismatchArrayLength() public {
+        address[] memory oldChipAddresses = new address[](3);
+        oldChipAddresses[0] = chipAddress1;
+        oldChipAddresses[1] = chipAddress2;
+        oldChipAddresses[2] = chipAddress3;
+
+        address[] memory newChipAddresses = new address[](2);
+        newChipAddresses[0] = vm.addr(1001);
+        newChipAddresses[1] = vm.addr(1002);
+
+        vm.prank(owner);
+        vm.expectRevert(MismatchArrayLength.selector);
+        pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
+    }
+
+    function test_updateChipAddresses_RevertWhen_ChipHasNotBeenMinted() public {
+        address[] memory oldChipAddresses = new address[](3);
+        oldChipAddresses[0] = chipAddress1;
+        oldChipAddresses[1] = chipAddress2;
+        oldChipAddresses[2] = chipAddress3;
+
+        address[] memory newChipAddresses = new address[](3);
+        newChipAddresses[0] = vm.addr(1001);
+        newChipAddresses[1] = vm.addr(1002);
+        newChipAddresses[2] = vm.addr(1003);
+
+        vm.prank(owner);
+        vm.expectRevert(UpdatingChipForUnsetChipMapping.selector);
+        pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
+    }
+
+    function test_updateChipAddresses() public {
+        vm.roll(blockNumber + 10);
+        address[] memory oldChipAddresses = new address[](3);
+        oldChipAddresses[0] = chipAddress1;
+        oldChipAddresses[1] = chipAddress2;
+        oldChipAddresses[2] = chipAddress3;
+
+        address[] memory newChipAddresses = new address[](3);
+        newChipAddresses[0] = vm.addr(1001);
+        newChipAddresses[1] = vm.addr(1002);
+        newChipAddresses[2] = vm.addr(1003);
+
+        vm.prank(owner);
+        pbt.seedChipAddresses(oldChipAddresses);
+
+        vm.startPrank(user1);
+        bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
+        bytes memory signature = _createSignature(payload, chip1);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(1, user1);
+        pbt.mintChip(signature, blockNumber);
+
+        payload = abi.encodePacked(user1, blockhash(blockNumber));
+        signature = _createSignature(payload, chip2);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(2, user1);
+        pbt.mintChip(signature, blockNumber);
+
+        payload = abi.encodePacked(user1, blockhash(blockNumber));
+        signature = _createSignature(payload, chip3);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(3, user1);
+        pbt.mintChip(signature, blockNumber);
+        vm.stopPrank();
+
+        vm.expectEmit(true, true, true, true);
+        emit PBTChipRemapping(1, oldChipAddresses[0], newChipAddresses[0]);
+        vm.expectEmit(true, true, true, true);
+        emit PBTChipRemapping(2, oldChipAddresses[1], newChipAddresses[1]);
+        vm.expectEmit(true, true, true, true);
+        emit PBTChipRemapping(3, oldChipAddresses[2], newChipAddresses[2]);
+        vm.prank(owner);
+        pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
+    }
+
+    function test_mintChip_RevertWhen_ChipHasNotBeenSeeded() public {
         uint256 addedBlockNumber = blockNumber + 10;
         vm.roll(addedBlockNumber);
 
@@ -75,7 +156,7 @@ contract PBTTest is Test {
         pbt.mintChip(signature, blockNumber);
     }
 
-    function test_mintChip_RevertWhen_chipHasBeenMinted() public {
+    function test_mintChip_RevertWhen_ChipHasBeenMinted() public {
         vm.roll(blockNumber + 10);
 
         address[] memory chipAddresses = new address[](1);

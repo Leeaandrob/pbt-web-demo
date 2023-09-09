@@ -115,13 +115,17 @@ contract PBT is ERC721A, IPBT, Ownable {
         for (uint256 i = 0; i < oldChipAddresses.length; ) {
             address oldChipAddress = oldChipAddresses[i];
             TokenChip memory tokenChip = _tokenChips[oldChipAddress];
+            uint256 tokenId = tokenChip.tokenId;
+
+            if (tokenId == 0) revert UpdatingChipForUnsetChipMapping();
             address newChipAddress = newChipAddresses[i];
             _tokenChips[newChipAddress] = TokenChip({
                 chipAddress: newChipAddress,
-                tokenId: tokenChip.tokenId
+                tokenId: tokenId
             });
-
+            emit PBTChipRemapping(tokenId, oldChipAddress, newChipAddress);
             delete _tokenChips[oldChipAddress];
+
             unchecked {
                 i++;
             }
