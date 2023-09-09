@@ -4,10 +4,10 @@ SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.20;
 
+import {Ownable} from "openzeppelin/access/Ownable.sol";
 import {ECDSA} from "openzeppelin/utils/cryptography/ECDSA.sol";
 import "erc721a/ERC721A.sol";
 import "pbt/IPBT.sol";
-import {Ownable} from "openzeppelin/access/Ownable.sol";
 
 error NoMintedTokenId();
 error InvalidBlockNumber();
@@ -85,7 +85,7 @@ contract PBT is ERC721A, IPBT, Ownable {
 
         tokenChips[chipAddress].tokenId = _nextTokenId();
         _mint(msg.sender, 1);
-        emit PBTMint(_nextTokenId() - 1, chipAddress);
+        emit PBTMint(_nextTokenId() - 1, msg.sender);
     }
 
     function seedChipAddresses(
