@@ -31,6 +31,14 @@ contract PBTTest is Test {
     uint256 public chip3 = 103;
     address public chipAddress3 = vm.addr(chip3);
 
+    modifier seedInitialChip() {
+        address[] memory chipAddresses = new address[](1);
+        chipAddresses[0] = chipAddress1;
+        vm.prank(owner);
+        pbt.seedChipAddresses(chipAddresses);
+        _;
+    }
+
     function setUp() public {
         pbt = new PBTMock();
         pbt.transferOwnership(owner);
@@ -193,13 +201,11 @@ contract PBTTest is Test {
         pbt.mintChip(signature, blockNumber);
     }
 
-    function test_mintChip_RevertWhen_ChipHasBeenMinted() public {
+    function test_mintChip_RevertWhen_ChipHasBeenMinted()
+        public
+        seedInitialChip
+    {
         vm.roll(blockNumber + 10);
-
-        address[] memory chipAddresses = new address[](1);
-        chipAddresses[0] = chipAddress1;
-        vm.prank(owner); // seed chip as the owner because there's an `onlyOwner` modifier
-        pbt.seedChipAddresses(chipAddresses);
 
         // mint the first chip as user1
         vm.startPrank(user1);
@@ -225,13 +231,8 @@ contract PBTTest is Test {
         pbt.mintChip(secondMintSignature, blockNumber + 10);
     }
 
-    function test_mintChip() public {
+    function test_mintChip() public seedInitialChip {
         vm.roll(blockNumber + 10);
-
-        address[] memory chipAddresses = new address[](1);
-        chipAddresses[0] = chipAddress1;
-        vm.prank(owner); // seed chip as the owner because there's an `onlyOwner` modifier
-        pbt.seedChipAddresses(chipAddresses);
 
         // mint the first chip as user1
         vm.startPrank(user1);
@@ -244,6 +245,7 @@ contract PBTTest is Test {
         assertEq(tokenChip.tokenId, 1);
         vm.stopPrank();
 
+        address[] memory chipAddresses = new address[](1);
         chipAddresses[0] = chipAddress2;
         vm.prank(owner); // seed chip as the owner because there's an `onlyOwner` modifier
         pbt.seedChipAddresses(chipAddresses);
@@ -260,13 +262,10 @@ contract PBTTest is Test {
         assertEq(tokenChip.tokenId, 2);
     }
 
-    function test_transferTokenWithChip(bool useSafeTransferFrom) public {
+    function test_transferTokenWithChip(
+        bool useSafeTransferFrom
+    ) public seedInitialChip {
         vm.roll(blockNumber + 10);
-
-        address[] memory chipAddresses = new address[](1);
-        chipAddresses[0] = chipAddress1;
-        vm.prank(owner);
-        pbt.seedChipAddresses(chipAddresses);
 
         vm.startPrank(user1);
         bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
@@ -297,13 +296,8 @@ contract PBTTest is Test {
         pbt.tokenIdFor(chipAddress1);
     }
 
-    function test_tokenIdFor() public {
+    function test_tokenIdFor() public seedInitialChip {
         vm.roll(blockNumber + 10);
-
-        address[] memory chipAddresses = new address[](1);
-        chipAddresses[0] = chipAddress1;
-        vm.prank(owner);
-        pbt.seedChipAddresses(chipAddresses);
 
         vm.startPrank(user1);
         bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
@@ -328,13 +322,8 @@ contract PBTTest is Test {
         pbt.isChipSignatureForToken(1, payload, signature); // arbitrary number
     }
 
-    function test_isChipSignatureForToken() public {
+    function test_isChipSignatureForToken() public seedInitialChip {
         vm.roll(blockNumber + 10);
-
-        address[] memory chipAddresses = new address[](1);
-        chipAddresses[0] = chipAddress1;
-        vm.prank(owner);
-        pbt.seedChipAddresses(chipAddresses);
 
         vm.startPrank(user1);
         bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
