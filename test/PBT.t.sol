@@ -124,18 +124,24 @@ contract PBTTest is Test {
         vm.expectEmit(true, true, true, true);
         emit PBTMint(1, user1);
         pbt.mintChip(signature, blockNumber);
+        PBT.TokenChip memory tokenChip = pbt.getTokenChip(chipAddress1);
+        assertEq(tokenChip.tokenId, 1);
 
         payload = abi.encodePacked(user1, blockhash(blockNumber));
         signature = _createSignature(payload, chip2);
         vm.expectEmit(true, true, true, true);
         emit PBTMint(2, user1);
         pbt.mintChip(signature, blockNumber);
+        tokenChip = pbt.getTokenChip(chipAddress2);
+        assertEq(tokenChip.tokenId, 2);
 
         payload = abi.encodePacked(user1, blockhash(blockNumber));
         signature = _createSignature(payload, chip3);
         vm.expectEmit(true, true, true, true);
         emit PBTMint(3, user1);
         pbt.mintChip(signature, blockNumber);
+        tokenChip = pbt.getTokenChip(chipAddress3);
+        assertEq(tokenChip.tokenId, 3);
         vm.stopPrank();
 
         vm.expectEmit(true, true, true, true);
@@ -146,6 +152,30 @@ contract PBTTest is Test {
         emit PBTChipRemapping(3, oldChipAddresses[2], newChipAddresses[2]);
         vm.prank(owner);
         pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
+
+        tokenChip = pbt.getTokenChip(oldChipAddresses[0]);
+        assertEq(tokenChip.tokenId, 0);
+        assertEq(tokenChip.chipAddress, address(0));
+
+        tokenChip = pbt.getTokenChip(oldChipAddresses[1]);
+        assertEq(tokenChip.tokenId, 0);
+        assertEq(tokenChip.chipAddress, address(0));
+
+        tokenChip = pbt.getTokenChip(oldChipAddresses[2]);
+        assertEq(tokenChip.tokenId, 0);
+        assertEq(tokenChip.chipAddress, address(0));
+
+        tokenChip = pbt.getTokenChip(newChipAddresses[0]);
+        assertEq(tokenChip.tokenId, 1);
+        assertEq(tokenChip.chipAddress, newChipAddresses[0]);
+
+        tokenChip = pbt.getTokenChip(newChipAddresses[1]);
+        assertEq(tokenChip.tokenId, 2);
+        assertEq(tokenChip.chipAddress, newChipAddresses[1]);
+
+        tokenChip = pbt.getTokenChip(newChipAddresses[2]);
+        assertEq(tokenChip.tokenId, 3);
+        assertEq(tokenChip.chipAddress, newChipAddresses[2]);
     }
 
     function test_mintChip_RevertWhen_ChipHasNotBeenSeeded() public {
@@ -174,7 +204,11 @@ contract PBTTest is Test {
         vm.startPrank(user1);
         bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
         bytes memory signature = _createSignature(payload, chip1);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(1, user1);
         pbt.mintChip(signature, blockNumber);
+        PBT.TokenChip memory tokenChip = pbt.getTokenChip(chipAddress1);
+        assertEq(tokenChip.tokenId, 1);
 
         // increase the block number, attempt to mint the same chip
         vm.roll(blockNumber + 20);
@@ -202,7 +236,11 @@ contract PBTTest is Test {
         vm.startPrank(user1);
         bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
         bytes memory signature = _createSignature(payload, chip1);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(1, user1);
         pbt.mintChip(signature, blockNumber);
+        PBT.TokenChip memory tokenChip = pbt.getTokenChip(chipAddress1);
+        assertEq(tokenChip.tokenId, 1);
         vm.stopPrank();
 
         chipAddresses[0] = chipAddress2;
@@ -217,6 +255,8 @@ contract PBTTest is Test {
         vm.expectEmit(true, true, true, true);
         emit PBTMint(2, user1);
         pbt.mintChip(signature, blockNumber + 10);
+        tokenChip = pbt.getTokenChip(chipAddress2);
+        assertEq(tokenChip.tokenId, 2);
     }
 
     function test_transferTokenWithChip(bool useSafeTransferFrom) public {
@@ -230,7 +270,11 @@ contract PBTTest is Test {
         vm.startPrank(user1);
         bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
         bytes memory signature = _createSignature(payload, chip1);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(1, user1);
         pbt.mintChip(signature, blockNumber);
+        PBT.TokenChip memory tokenChip = pbt.getTokenChip(chipAddress1);
+        assertEq(tokenChip.tokenId, 1);
         vm.stopPrank();
 
         vm.roll(blockNumber + 200); // let's say that the transfer happened after the maximum block window
