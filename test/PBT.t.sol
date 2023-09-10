@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "../src/PBTMock.sol";
+import "openzeppelin/interfaces/IERC721.sol";
 
 contract PBTTest is Test {
     event PBTMint(uint256 indexed tokenId, address indexed chipAddress);
@@ -349,5 +350,10 @@ contract PBTTest is Test {
         );
 
         assertEq(isChipSignatureForToken, true);
+    }
+
+    function test_supportsInterface() public {
+        assertEq(pbt.supportsInterface(type(IPBT).interfaceId), true);
+        assertEq(pbt.supportsInterface(type(IERC721).interfaceId), true);
     }
 }

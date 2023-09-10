@@ -6,8 +6,8 @@ pragma solidity ^0.8.20;
 
 import {Ownable} from "openzeppelin/access/Ownable.sol";
 import {ECDSA} from "openzeppelin/utils/cryptography/ECDSA.sol";
-import "erc721a/ERC721A.sol";
-import "pbt/IPBT.sol";
+import {ERC721A} from "erc721a/ERC721A.sol";
+import {IPBT} from "pbt/IPBT.sol";
 
 error NoMintedTokenId();
 error InvalidBlockNumber();
@@ -189,6 +189,8 @@ contract PBT is ERC721A, IPBT, Ownable {
     function supportsInterface(
         bytes4 interfaceId
     ) public view virtual override(ERC721A) returns (bool) {
-        return ERC721A.supportsInterface(interfaceId);
+        return
+            ERC721A.supportsInterface(interfaceId) ||
+            interfaceId == type(IPBT).interfaceId;
     }
 }
