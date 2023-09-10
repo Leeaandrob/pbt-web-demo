@@ -12,11 +12,17 @@ contract PBTTest is Test {
         address indexed oldChipAddress,
         address indexed newChipAddress
     );
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
 
     PBTMock public pbt;
     uint256 public blockNumber = 10;
     address public owner = vm.addr(999);
     address public user1 = vm.addr(1);
+    address public user2 = vm.addr(1);
     uint256 public chip1 = 101;
     address public chipAddress1 = vm.addr(chip1);
     uint256 public chip2 = 102;
@@ -211,5 +217,33 @@ contract PBTTest is Test {
         vm.expectEmit(true, true, true, true);
         emit PBTMint(2, user1);
         pbt.mintChip(signature, blockNumber + 10);
+    }
+
+    function test_transferTokenWithChip(bool useSafeTransferFrom) public {
+        vm.roll(blockNumber + 10);
+
+        address[] memory chipAddresses = new address[](1);
+        chipAddresses[0] = chipAddress1;
+        vm.prank(owner);
+        pbt.seedChipAddresses(chipAddresses);
+
+        vm.startPrank(user1);
+        bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
+        bytes memory signature = _createSignature(payload, chip1);
+        pbt.mintChip(signature, blockNumber);
+        vm.stopPrank();
+
+        vm.roll(blockNumber + 200); // let's say that the transfer happened after the maximum block window
+        payload = abi.encodePacked(user1, blockhash(blockNumber + 150)); // arbitrary number less than maximum block window
+        signature = _createSignature(payload, chip1);
+        vm.prank(user2);
+        vm.expectEmit(true, true, true, true);
+        emit Transfer(user1, user2, 1);
+        pbt.transferTokenWithChip(
+            signature,
+            blockNumber + 150,
+            useSafeTransferFrom
+        );
+        assertEq(pbt.ownerOf(1), user2);
     }
 }
