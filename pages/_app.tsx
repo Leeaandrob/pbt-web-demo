@@ -25,7 +25,7 @@ export default function App(props: AppProps) {
 
   const { connectors } = getDefaultWallets({
     appName: "RainbowKit App",
-    projectId: "YOUR_PROJECT_ID",
+    projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECTID as string,
     chains,
   });
 
