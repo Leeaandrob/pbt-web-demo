@@ -206,16 +206,10 @@ contract PBTTest is Test {
         // increase the block number, attempt to mint the second chip
         vm.roll(blockNumber + 20);
         vm.startPrank(user1);
-        bytes memory secondMintPayload = abi.encodePacked(
-            user1,
-            blockhash(blockNumber + 10)
-        );
-        bytes memory secondMintSignature = _createSignature(
-            secondMintPayload,
-            chip2
-        );
+        payload = abi.encodePacked(user1, blockhash(blockNumber + 10));
+        signature = _createSignature(payload, chip2);
         vm.expectEmit(true, true, true, true);
         emit PBTMint(2, user1);
-        pbt.mintChip(secondMintSignature, blockNumber + 10);
+        pbt.mintChip(signature, blockNumber + 10);
     }
 }
