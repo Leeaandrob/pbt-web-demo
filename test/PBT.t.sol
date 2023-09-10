@@ -317,4 +317,37 @@ contract PBTTest is Test {
         uint256 tokenId = pbt.tokenIdFor(chipAddress1);
         assertEq(tokenId, 1);
     }
+
+    function test_isChipSignatureForToken_RevertWhen_ChipHasNotBeenMinted()
+        public
+    {
+        bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
+        bytes memory signature = _createSignature(payload, chip1);
+        vm.expectRevert(NoMintedTokenId.selector);
+        pbt.isChipSignatureForToken(1, payload, signature); // arbitrary number
+    }
+
+    function test_isChipSignatureForToken() public {
+        vm.roll(blockNumber + 10);
+
+        address[] memory chipAddresses = new address[](1);
+        chipAddresses[0] = chipAddress1;
+        vm.prank(owner);
+        pbt.seedChipAddresses(chipAddresses);
+
+        vm.startPrank(user1);
+        bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
+        bytes memory signature = _createSignature(payload, chip1);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(1, user1);
+        pbt.mintChip(signature, blockNumber);
+
+        bool isChipSignatureForToken = pbt.isChipSignatureForToken(
+            1,
+            payload,
+            signature
+        );
+
+        assertEq(isChipSignatureForToken, true);
+    }
 }
