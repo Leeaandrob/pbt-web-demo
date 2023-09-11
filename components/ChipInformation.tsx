@@ -1,4 +1,4 @@
-import { Card, HoverCard, Popover, Text } from "@mantine/core";
+import { Card, HoverCard, Text } from "@mantine/core";
 
 export default function ChipInformation({
   type,
