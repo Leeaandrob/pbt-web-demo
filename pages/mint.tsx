@@ -89,11 +89,12 @@ const Home: NextPage = () => {
         Chips
       </Text>
       {keys === undefined && <Text align="center">No chip</Text>}
-      <ScrollArea mt={10}>
+      <ScrollArea mt={10} h={190}>
         <Flex
           direction={{ base: "column", sm: "row" }}
           gap={{ base: "sm", sm: "lg" }}
-          justify={{ sm: "center" }}
+          justify={{ base: "center" }}
+          align={{ base: "center" }}
         >
           {keys?.primaryPublicKeyHash && (
             <ChipInformation
