@@ -1,13 +1,15 @@
-import { AppShell, Header, Flex, Card, Container } from "@mantine/core";
+import { AppShell, Header, Flex, Card, Container, Anchor } from "@mantine/core";
 import { ReactNode } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 type Props = {
   children: ReactNode;
 };
 
 const Layout = ({ children }: Props) => {
+  const router = useRouter();
   return (
     <AppShell
       padding="md"
@@ -39,10 +41,22 @@ const Layout = ({ children }: Props) => {
     >
       <Container p={0} size={600}>
         <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Link href="/mint">Mint</Link>
-          <Link href="/seed" style={{ paddingLeft: "5px" }}>
+          <Anchor
+            component={Link}
+            href="/mint"
+            style={{ textDecoration: "none" }}
+            c={router.asPath === "/mint" ? "dimmed" : ""}
+          >
+            Mint
+          </Anchor>
+          <Anchor
+            component={Link}
+            href="/seed"
+            style={{ paddingLeft: "5px", textDecoration: "none" }}
+            c={router.asPath === "/seed" ? "dimmed" : ""}
+          >
             Seed Chip
-          </Link>
+          </Anchor>
           {children}
         </Card>
       </Container>
