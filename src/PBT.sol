@@ -4,7 +4,6 @@ SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.20;
 
-import {Ownable} from "openzeppelin/access/Ownable.sol";
 import {ECDSA} from "openzeppelin/utils/cryptography/ECDSA.sol";
 import {ERC721A} from "erc721a/ERC721A.sol";
 import {IPBT} from "pbt/IPBT.sol";
@@ -17,7 +16,7 @@ error UnauthorizedToMint();
 error MismatchArrayLength();
 error UpdatingChipForUnsetChipMapping();
 
-contract PBT is ERC721A, IPBT, Ownable {
+contract PBT is ERC721A, IPBT {
     using ECDSA for bytes32;
 
     struct TokenChip {
@@ -89,9 +88,7 @@ contract PBT is ERC721A, IPBT, Ownable {
         emit PBTMint(_nextTokenId() - 1, msg.sender);
     }
 
-    function seedChipAddresses(
-        address[] memory chipAddresses
-    ) external onlyOwner {
+    function seedChipAddresses(address[] memory chipAddresses) external {
         for (uint256 i = 0; i < chipAddresses.length; ) {
             address chipAddress = chipAddresses[i];
             _tokenChips[chipAddress] = TokenChip({
@@ -108,7 +105,7 @@ contract PBT is ERC721A, IPBT, Ownable {
     function updateChipAddresses(
         address[] memory oldChipAddresses,
         address[] memory newChipAddresses
-    ) external onlyOwner {
+    ) external {
         if (oldChipAddresses.length != newChipAddresses.length)
             revert MismatchArrayLength();
 

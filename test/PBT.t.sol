@@ -21,7 +21,6 @@ contract PBTTest is Test {
 
     PBTMock public pbt;
     uint256 public blockNumber = 10;
-    address public owner = vm.addr(999);
     address public user1 = vm.addr(1);
     address public user2 = vm.addr(1);
     uint256 public chip1 = 101;
@@ -34,14 +33,12 @@ contract PBTTest is Test {
     modifier seedInitialChip() {
         address[] memory chipAddresses = new address[](1);
         chipAddresses[0] = chipAddress1;
-        vm.prank(owner);
         pbt.seedChipAddresses(chipAddresses);
         _;
     }
 
     function setUp() public {
         pbt = new PBTMock();
-        pbt.transferOwnership(owner);
     }
 
     function _createSignature(
@@ -68,7 +65,6 @@ contract PBTTest is Test {
         chipAddresses[0] = chipAddress1;
         chipAddresses[1] = chipAddress2;
         chipAddresses[2] = chipAddress3;
-        vm.prank(owner);
         pbt.seedChipAddresses(chipAddresses);
 
         address[] memory seededChipAddresses = new address[](3);
@@ -91,7 +87,6 @@ contract PBTTest is Test {
         newChipAddresses[0] = vm.addr(1001);
         newChipAddresses[1] = vm.addr(1002);
 
-        vm.prank(owner);
         vm.expectRevert(MismatchArrayLength.selector);
         pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
     }
@@ -107,7 +102,6 @@ contract PBTTest is Test {
         newChipAddresses[1] = vm.addr(1002);
         newChipAddresses[2] = vm.addr(1003);
 
-        vm.prank(owner);
         vm.expectRevert(UpdatingChipForUnsetChipMapping.selector);
         pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
     }
@@ -124,7 +118,6 @@ contract PBTTest is Test {
         newChipAddresses[1] = vm.addr(1002);
         newChipAddresses[2] = vm.addr(1003);
 
-        vm.prank(owner);
         pbt.seedChipAddresses(oldChipAddresses);
 
         vm.startPrank(user1);
@@ -159,7 +152,6 @@ contract PBTTest is Test {
         emit PBTChipRemapping(2, oldChipAddresses[1], newChipAddresses[1]);
         vm.expectEmit(true, true, true, true);
         emit PBTChipRemapping(3, oldChipAddresses[2], newChipAddresses[2]);
-        vm.prank(owner);
         pbt.updateChipAddresses(oldChipAddresses, newChipAddresses);
 
         tokenChip = pbt.getTokenChip(oldChipAddresses[0]);
@@ -247,7 +239,6 @@ contract PBTTest is Test {
 
         address[] memory chipAddresses = new address[](1);
         chipAddresses[0] = chipAddress2;
-        vm.prank(owner); // seed chip as the owner because there's an `onlyOwner` modifier
         pbt.seedChipAddresses(chipAddresses);
 
         // increase the block number, attempt to mint the second chip
