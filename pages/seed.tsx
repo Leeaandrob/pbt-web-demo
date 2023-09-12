@@ -1,6 +1,6 @@
+import abi from "../abi/abi.json";
 import {
   TextInput,
-  Checkbox,
   Button,
   Group,
   Text,
@@ -8,14 +8,64 @@ import {
   ActionIcon,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { IconCheck, IconPlus, IconTrash } from "@tabler/icons-react";
+import {
+  useAccount,
+  useContractWrite,
+  usePrepareContractWrite,
+  useWaitForTransaction,
+} from "wagmi";
 
 export default function Seed() {
+  const { openConnectModal } = useConnectModal();
+  const { isConnected } = useAccount();
   const form = useForm({
     initialValues: {
       chipAddresses: [{ chipAddress: "" }],
     },
   });
+
+  const {
+    config,
+    error: prepareError,
+    isError: isPrepareError,
+  } = usePrepareContractWrite({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
+    abi: abi.abi,
+    functionName: "seedChipAddresses",
+    args: [form.values.chipAddresses.map(({ chipAddress }) => chipAddress)],
+  });
+  const { data, error, isError, write: seed } = useContractWrite(config);
+
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  if (isLoading) {
+    notifications.show({
+      id: "tx",
+      loading: true,
+      title: "Submitting transaction",
+      message:
+        "The inputted chip addresses soon will be updated in the contract storage",
+      autoClose: false,
+      withCloseButton: false,
+    });
+  }
+
+  if (isSuccess) {
+    notifications.update({
+      id: "tx",
+      color: "teal",
+      title: "Transaction confirmed",
+      message: "The inputted chip addresses are ready to mint",
+      icon: <IconCheck size="1rem" />,
+      autoClose: 2000,
+    });
+  }
+  console.log({ data, error, isError, seed, isLoading, isSuccess });
 
   const fields = form.values.chipAddresses.map((_, index) => (
     <>
@@ -64,10 +114,14 @@ export default function Seed() {
       <Text fz="xl" fw={500} style={{ marginBottom: "15px" }}>
         Seed Chip Addresses
       </Text>
-      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+      <form>
         {fields}
         <Group position="right" mt="md">
-          <Button color="blue" type="submit">
+          <Button
+            loading={isLoading}
+            color="blue"
+            onClick={isConnected ? seed : openConnectModal}
+          >
             Submit
           </Button>
         </Group>

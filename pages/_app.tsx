@@ -7,6 +7,7 @@ import {
   ColorSchemeProvider,
   MantineProvider,
 } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import Layout from "./layout";
 import { WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
@@ -58,6 +59,7 @@ export default function App(props: AppProps) {
           <WagmiConfig config={wagmiConfig}>
             <RainbowKitProvider chains={chains}>
               <Layout>
+                <Notifications />
                 <Component {...pageProps} />
               </Layout>
             </RainbowKitProvider>
