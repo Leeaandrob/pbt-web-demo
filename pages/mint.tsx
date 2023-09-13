@@ -89,7 +89,7 @@ const Home: NextPage = () => {
         Chips
       </Text>
       {keys === undefined && <Text align="center">No chip</Text>}
-      <ScrollArea mt={10} h={190}>
+      <ScrollArea mt={10} h={keys === undefined ? 0 : 190}>
         <Flex
           direction={{ base: "column", sm: "row" }}
           gap={{ base: "sm", sm: "lg" }}
