@@ -59,7 +59,7 @@ export default function App(props: AppProps) {
           <WagmiConfig config={wagmiConfig}>
             <RainbowKitProvider chains={chains}>
               <Layout>
-                <Notifications />
+                <Notifications limit={1} />
                 <Component {...pageProps} />
               </Layout>
             </RainbowKitProvider>
