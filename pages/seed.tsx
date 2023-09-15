@@ -11,6 +11,7 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { IconCheck, IconPlus, IconTrash } from "@tabler/icons-react";
+import { ethers } from "ethers";
 import {
   useAccount,
   useContractWrite,
@@ -65,7 +66,6 @@ export default function Seed() {
       autoClose: 2000,
     });
   }
-  console.log({ data, error, isError, seed, isLoading, isSuccess });
 
   const fields = form.values.chipAddresses.map((_, index) => (
     <>
@@ -118,6 +118,9 @@ export default function Seed() {
         {fields}
         <Group position="right" mt="md">
           <Button
+            disabled={form.values.chipAddresses.some(
+              ({ chipAddress }) => !ethers.isAddress(chipAddress)
+            )}
             loading={isLoading}
             color="blue"
             onClick={isConnected ? seed : openConnectModal}
