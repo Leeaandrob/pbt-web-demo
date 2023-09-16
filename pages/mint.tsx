@@ -1,23 +1,25 @@
-import {
-  Button,
-  Card,
-  Center,
-  Container,
-  Flex,
-  ScrollArea,
-  Text,
-} from "@mantine/core";
+import abi from "../abi/abi.json";
+import ChipInformation from "@/components/ChipInformation";
+import { Button, Center, Flex, Group, ScrollArea, Text } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { IconCheck, IconCircleCheck, IconX } from "@tabler/icons-react";
 import { computeAddress } from "ethers";
 import type { NextPage } from "next";
 import Link from "next/link";
-import { useState } from "react";
 import {
   getPublicKeysFromScan,
   getSignatureFromScan,
 } from "pbt-chip-client/kong";
-import { useAccount, useConnect, usePublicClient } from "wagmi";
-import ChipInformation from "@/components/ChipInformation";
+import { useState } from "react";
+import { BaseError } from "viem";
+import {
+  useAccount,
+  useContractWrite,
+  usePrepareContractWrite,
+  usePublicClient,
+  useWaitForTransaction,
+} from "wagmi";
 
 type ChipKeys =
   | {
@@ -37,46 +39,116 @@ const Home: NextPage = () => {
     chainId: 11155111,
   });
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
-  const [chipAddress, setChipAddress] = useState<string | null>(null);
   const [signature, setSignature] = useState<string | undefined>(undefined);
   const [keys, setKeys] = useState<ChipKeys | undefined>(undefined);
   const [blockNumber, setBlockNumber] = useState<bigint>(BigInt(0));
 
+  const {
+    config,
+    error: prepareError,
+    isError: isPrepareError,
+    refetch,
+  } = usePrepareContractWrite({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
+    abi: abi.abi,
+    functionName: "mintChip",
+    args: [signature, blockNumber],
+  });
+  const { data, error, isError, reset, write: mint } = useContractWrite(config);
+
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
   async function scanChip() {
-    setKeys({
-      primaryPublicKeyHash:
-        "0x25e0bbb8c9e50e300aed9c056d8ed1c7067b53d7c9ad6021fea099b9261fe346",
-      primaryPublicKeyRaw:
-        "0437ffa75e89387951c032673e0bf972f825570f7372535bafac06733370d3f039888b13a4138f6ffc9a912356f2803c59e86e5efc78c88e672074e26afb3face9",
-      secondaryPublicKeyHash:
-        "0x14013d660459deda7a913b056345e781a6ad92a6fc953e433966efadc4979027",
-      secondaryPublicKeyRaw:
-        "041159b096ad64bcec6db863fb1a34250e9f84e649e27a265c136e9dfa5d5c2d9fc3be6aa3b167773d17d150932231eb3966f1c5f0ab36e37eac87f4fd03c53b67",
-      tertiaryPublicKeyHash: null,
-      tertiaryPublicKeyRaw: null,
-    });
-    // setSignature(undefined);
-    // const chipKeys = await getPublicKeysFromScan();
-    // setKeys(chipKeys);
-    // setChipAddress(computeAddress("0x" + chipKeys?.primaryPublicKeyRaw));
+    setSignature(undefined);
+    setBlockNumber(BigInt(0));
+    const chipKeys = await getPublicKeysFromScan();
+    setKeys(chipKeys);
   }
 
-  async function signChip(chipKeys: ChipKeys) {
-    if (chipKeys === undefined) {
-      chipKeys = keys;
-    }
+  async function signChip() {
     const recentBlockNumber = await provider.getBlockNumber();
-    setBlockNumber(recentBlockNumber);
+    setBlockNumber(recentBlockNumber - BigInt(10));
     const { hash: blockHash } = await provider.getBlock({
-      blockNumber: recentBlockNumber,
+      blockNumber: recentBlockNumber - BigInt(10),
     });
     const signatureScan = await getSignatureFromScan({
-      chipPublicKey: chipKeys?.primaryPublicKeyRaw!,
+      chipPublicKey: keys?.primaryPublicKeyRaw!,
       address: address!,
       hash: blockHash,
     });
     setSignature(signatureScan);
+  }
+
+  function parseErrorMessage(error: BaseError): string | undefined {
+    if (error.message.includes("UnauthorizedToMint")) {
+      return "Seed the chip first";
+    }
+    if (error.message.includes("User rejected the request")) {
+      return "Operation cancelled";
+    }
+    if (error.message.includes("ChipHasBeenMinted")) {
+      return "Chip has been minted";
+    }
+  }
+
+  if (isPrepareError && prepareError instanceof BaseError) {
+    const errorMessage = parseErrorMessage(prepareError);
+    notifications.show({
+      id: "error",
+      color: "red",
+      icon: <IconX />,
+      title: "Error on minting",
+      message: errorMessage,
+      autoClose: 2000,
+      withCloseButton: true,
+    });
+    // refetch();
+  }
+
+  if (isError && error instanceof BaseError) {
+    const errorMessage = parseErrorMessage(error);
+    notifications.show({
+      id: "error",
+      color: "red",
+      icon: <IconX />,
+      title: "Error on minting",
+      message: errorMessage,
+      autoClose: 2000,
+      withCloseButton: true,
+    });
+    reset();
+  }
+
+  if (isLoading) {
+    notifications.show({
+      id: "tx",
+      loading: true,
+      title: "Minting the token",
+      message: "",
+      autoClose: false,
+      withCloseButton: false,
+    });
+  }
+
+  if (isSuccess) {
+    notifications.update({
+      id: "tx",
+      color: "teal",
+      title: "Token minted",
+      message: (
+        <>
+          Check the transaction at
+          <Link href={`https://sepolia.etherscan.io/tx/${data?.hash}`}>
+            {" "}
+            {`https://sepolia.etherscan.io/tx/${data?.hash}`}
+          </Link>
+        </>
+      ),
+      icon: <IconCheck size="1rem" />,
+      autoClose: 2000,
+    });
   }
 
   async function connected() {
@@ -123,27 +195,42 @@ const Home: NextPage = () => {
       <Center>
         <Button
           variant="light"
-          color="blue"
+          color={keys === undefined ? "blue" : "green"}
+          leftIcon={keys === undefined ? "" : <IconCircleCheck />}
           mt="md"
           radius="md"
           onClick={() => scanChip()}
         >
-          Scan Chip
+          {keys === undefined ? "Scan Chip" : "Re-scan Chip"}
         </Button>
       </Center>
       <Text weight={500} fz="xl">
         Mint
       </Text>
       <Center>
-        <Button
-          variant="light"
-          color="blue"
-          mt="md"
-          radius="md"
-          onClick={isConnected ? connected : openConnectModal}
-        >
-          Mint
-        </Button>
+        <Group>
+          <Button
+            disabled={keys === undefined}
+            color={signature === undefined ? "blue" : "green"}
+            leftIcon={signature === undefined ? "" : <IconCircleCheck />}
+            variant="light"
+            mt="md"
+            radius="md"
+            onClick={isConnected ? signChip : openConnectModal}
+          >
+            {signature === undefined ? "Check Validity" : "Re-check Validity"}
+          </Button>
+          <Button
+            disabled={signature === undefined}
+            variant="light"
+            color="blue"
+            mt="md"
+            radius="md"
+            onClick={mint}
+          >
+            Mint
+          </Button>
+        </Group>
       </Center>
     </>
   );
