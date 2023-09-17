@@ -10,8 +10,9 @@ import {
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { IconCheck, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconCheck, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import { ethers } from "ethers";
+import { BaseError } from "viem";
 import {
   useAccount,
   useContractWrite,
@@ -36,13 +37,52 @@ export default function Seed() {
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
     abi: abi.abi,
     functionName: "seedChipAddresses",
-    args: [form.values.chipAddresses.map(({ chipAddress }) => chipAddress)],
+    args: [
+      form.values.chipAddresses.some(({ chipAddress }) =>
+        ethers.isAddress(chipAddress)
+      )
+        ? form.values.chipAddresses.map(({ chipAddress }) => chipAddress)
+        : [],
+    ],
   });
-  const { data, error, isError, write: seed } = useContractWrite(config);
+  const { data, error, isError, reset, write: seed } = useContractWrite(config);
 
   const { isLoading, isSuccess } = useWaitForTransaction({
     hash: data?.hash,
   });
+
+  function parseErrorMessage(error: BaseError): string | undefined {
+    if (error.message.includes("User rejected the request")) {
+      return "Operation cancelled";
+    }
+  }
+
+  if (isPrepareError && prepareError instanceof BaseError) {
+    const errorMessage = parseErrorMessage(prepareError);
+    notifications.show({
+      id: "error",
+      color: "red",
+      icon: <IconX />,
+      title: "Error on seeding",
+      message: errorMessage,
+      autoClose: 2000,
+      withCloseButton: true,
+    });
+  }
+
+  if (isError && error instanceof BaseError) {
+    const errorMessage = parseErrorMessage(error);
+    notifications.show({
+      id: "error",
+      color: "red",
+      icon: <IconX />,
+      title: "Error on seeding",
+      message: errorMessage,
+      autoClose: 2000,
+      withCloseButton: true,
+    });
+    reset();
+  }
 
   if (isLoading) {
     notifications.show({
