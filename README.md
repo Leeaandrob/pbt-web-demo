@@ -1,8 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## About the Project
+
+I received a couple of [arx's HaLo Chips](https://arx.org/) back in January to conduct a research how actually a physical backed tokens can be done as [EIP-5791](https://eips.ethereum.org/EIPS/eip-5791) was just dropped 3 months before. 
+
+I don't hear much about the project and so I decided to contribute a little to the project. This project is highly inspired by [PBT](https://github.com/chiru-labs/PBT) itself.
+
+The flow to mint the token itself is actually pretty simple.
+1. Seed the chip
+2. Generate signature
+3. Mint
+4. ???
+5. Profit
+
+This repository is intended only as a demo, the code (both the contract and the frontend) need a lot of adjustment before it is ready to ship to the production.
 
 ## Getting Started
 
-First, run the development server:
+### Environment Variables Set Up
+There are two ways to set up the environment variables. As you may see, the repository is a combination of Next.js and Foundry project. You can choose whether you'd run only the Next.js, smart contract (with Foundry), or both. 
+#### Next.js
+The essential environment variables for Next.js project are `NEXT_PUBLIC_CONTRACT_ADDRESS` for deployed contract address and `NEXT_PUBLIC_WALLET_CONNECT_PROJECTID`. It should have `NEXT_PUBLIC_` prefix otherwise it won't accessible to the browser.
+#### Foundry
+On the contrary, the environment variables for the smart contract is pretty straightforward. There's `PRIVATE_KEY` to deploy the smart contract, `ETHERSCAN_API_KEY` to verify the smart contract on Etherscan, and `SEPOLIA_RPC_URL`.
+
+Put them all in `.env` file and you're good.
+### Running the Website
+After installing the dependencies with `npm install`, you can run the development server with:
 
 ```bash
 npm run dev
@@ -12,27 +34,8 @@ yarn dev
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Testings
+As of now there's no test cases for the Next.js, but you can test the smart contract with `forge test`.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Contributing
+Contributing is very welcome. You can fork the repository, give the changes on your end, and open a pull request.
