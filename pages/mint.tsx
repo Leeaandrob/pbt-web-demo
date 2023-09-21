@@ -50,7 +50,7 @@ const Home: NextPage = () => {
     refetch,
   } = usePrepareContractWrite({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
-    abi: abi.abi,
+    abi,
     functionName: "mintChip",
     args: [signature, blockNumber],
   });

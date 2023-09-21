@@ -35,7 +35,7 @@ export default function Seed() {
     isError: isPrepareError,
   } = usePrepareContractWrite({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
-    abi: abi.abi,
+    abi,
     functionName: "seedChipAddresses",
     args: [
       form.values.chipAddresses.some(({ chipAddress }) =>
