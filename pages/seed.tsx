@@ -12,6 +12,7 @@ import { notifications } from "@mantine/notifications";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { IconCheck, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import { ethers } from "ethers";
+import Link from "next/link";
 import { BaseError } from "viem";
 import {
   useAccount,
@@ -101,7 +102,16 @@ export default function Seed() {
       id: "tx",
       color: "teal",
       title: "Transaction confirmed",
-      message: "The inputted chip addresses are ready to mint",
+      message: (
+        <>
+          The inputted chip addresses are ready to mint. Check the transaction
+          at
+          <Link href={`https://sepolia.etherscan.io/tx/${data?.hash}`}>
+            {" "}
+            {`https://sepolia.etherscan.io/tx/${data?.hash}`}
+          </Link>
+        </>
+      ),
       icon: <IconCheck size="1rem" />,
       autoClose: 2000,
     });
