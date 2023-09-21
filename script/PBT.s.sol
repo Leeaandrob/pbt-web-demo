@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/PBT.sol";
+import "../contract/PBT.sol";
 
 contract PBTScript is Script {
     function run() public {

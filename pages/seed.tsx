@@ -1,4 +1,4 @@
-import abi from "../abi/abi.json";
+import abi from "../contract/abi.json";
 import {
   TextInput,
   Button,

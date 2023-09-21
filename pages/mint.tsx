@@ -1,4 +1,4 @@
-import abi from "../abi/abi.json";
+import abi from "../contract/abi.json";
 import ChipInformation from "@/components/ChipInformation";
 import { Button, Center, Flex, Group, ScrollArea, Text } from "@mantine/core";
 import { notifications } from "@mantine/notifications";

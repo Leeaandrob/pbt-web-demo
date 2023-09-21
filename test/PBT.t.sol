@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "../src/PBTMock.sol";
+import "../contract/PBTMock.sol";
 import "openzeppelin/interfaces/IERC721.sol";
 
 contract PBTTest is Test {
