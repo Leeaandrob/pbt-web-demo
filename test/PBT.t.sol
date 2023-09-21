@@ -60,6 +60,39 @@ contract PBTTest is Test {
         return _createSignature(abi.encodePacked(payload), chipAddrNum);
     }
 
+    function test_seedChipAddresses_RevertWhen_ChipHasBeenMinted() public {
+        address[] memory chipAddresses = new address[](3);
+        chipAddresses[0] = chipAddress1;
+        chipAddresses[1] = chipAddress2;
+        chipAddresses[2] = chipAddress3;
+        pbt.seedChipAddresses(chipAddresses);
+
+        address[] memory seededChipAddresses = new address[](3);
+        for (uint256 i = 0; i < chipAddresses.length; ++i) {
+            seededChipAddresses[i] = pbt
+                .getTokenChip(chipAddresses[i])
+                .chipAddress;
+        }
+
+        assertEq(chipAddresses, seededChipAddresses);
+
+        vm.roll(blockNumber + 10);
+
+        vm.startPrank(user1);
+        bytes memory payload = abi.encodePacked(user1, blockhash(blockNumber));
+        bytes memory signature = _createSignature(payload, chip1);
+        vm.expectEmit(true, true, true, true);
+        emit PBTMint(1, user1);
+        pbt.mintChip(signature, blockNumber);
+        PBT.TokenChip memory tokenChip = pbt.getTokenChip(chipAddress1);
+        assertEq(tokenChip.tokenId, 1);
+
+        chipAddresses = new address[](1);
+        chipAddresses[0] = chipAddress1;
+        vm.expectRevert(ChipHasBeenMinted.selector);
+        pbt.seedChipAddresses(chipAddresses);
+    }
+
     function test_seedChipAddresses() public {
         address[] memory chipAddresses = new address[](3);
         chipAddresses[0] = chipAddress1;

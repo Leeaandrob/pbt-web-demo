@@ -91,6 +91,8 @@ contract PBT is ERC721A, IPBT {
     function seedChipAddresses(address[] memory chipAddresses) external {
         for (uint256 i = 0; i < chipAddresses.length; ) {
             address chipAddress = chipAddresses[i];
+            if (_tokenChips[chipAddress].tokenId != 0)
+                revert ChipHasBeenMinted();
             _tokenChips[chipAddress] = TokenChip({
                 chipAddress: chipAddress,
                 tokenId: 0
