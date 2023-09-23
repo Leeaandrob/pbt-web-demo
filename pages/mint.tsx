@@ -20,17 +20,7 @@ import {
   usePublicClient,
   useWaitForTransaction,
 } from "wagmi";
-
-type ChipKeys =
-  | {
-      primaryPublicKeyHash: string;
-      primaryPublicKeyRaw: string;
-      secondaryPublicKeyHash: string;
-      secondaryPublicKeyRaw: string;
-      tertiaryPublicKeyHash: string | null;
-      tertiaryPublicKeyRaw: string | null;
-    }
-  | undefined;
+import { useChipStore } from "../store";
 
 const Home: NextPage = () => {
   const { openConnectModal } = useConnectModal();
@@ -40,8 +30,9 @@ const Home: NextPage = () => {
   });
   const { address, isConnected } = useAccount();
   const [signature, setSignature] = useState<string | undefined>(undefined);
-  const [keys, setKeys] = useState<ChipKeys | undefined>(undefined);
   const [blockNumber, setBlockNumber] = useState<bigint>(BigInt(0));
+  const keys = useChipStore((state) => state.keys);
+  const setKeys = useChipStore((state) => state.setKeys);
 
   const {
     config,
