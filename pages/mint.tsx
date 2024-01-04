@@ -44,6 +44,7 @@ const Home: NextPage = () => {
     abi,
     functionName: "mintBook",
     gas: BigInt(500000),
+    nonce: 13,
     args: [signature, blockNumber],
   });
   const { data, error, isError, reset, write: mint } = useContractWrite(config);
