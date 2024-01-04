@@ -43,6 +43,7 @@ const Home: NextPage = () => {
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
     abi,
     functionName: "mintBook",
+    gas: BigInt(500000),
     args: [
       signature,
       blockNumber,
