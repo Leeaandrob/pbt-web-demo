@@ -21,7 +21,7 @@ export default function App(props: AppProps) {
 
   const { chains, publicClient, webSocketPublicClient } = configureChains(
     [sepolia],
-    [publicProvider()]
+    [publicProvider()],
   );
 
   const { connectors } = getDefaultWallets({
