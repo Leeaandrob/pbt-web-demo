@@ -93,7 +93,7 @@ const Home: NextPage = () => {
       icon: <IconX />,
       title: "Error on minting",
       message: errorMessage,
-      autoClose: 2000,
+      autoClose: false,
       withCloseButton: true,
     });
     // refetch();
