@@ -82,6 +82,7 @@ const Home: NextPage = () => {
     if (error.message.includes("ChipHasBeenMinted")) {
       return "Chip has been minted";
     }
+    return error.message;
   }
 
   if (isPrepareError && prepareError instanceof BaseError) {
