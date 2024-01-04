@@ -42,7 +42,7 @@ const Home: NextPage = () => {
   } = usePrepareContractWrite({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
     abi,
-    functionName: "mintChip",
+    functionName: "mintBook",
     args: [signature, blockNumber],
   });
   const { data, error, isError, reset, write: mint } = useContractWrite(config);
