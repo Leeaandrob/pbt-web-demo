@@ -38,13 +38,10 @@ const Home: NextPage = () => {
     config,
     error: prepareError,
     isError: isPrepareError,
-    refetch,
   } = usePrepareContractWrite({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}`,
     abi,
     functionName: "mintBook",
-    gas: BigInt(500000),
-    nonce: 13,
     args: [signature, blockNumber],
   });
   const { data, error, isError, reset, write: mint } = useContractWrite(config);
