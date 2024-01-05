@@ -9,7 +9,13 @@ import {
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import Layout from "./layout";
-import { WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
+import {
+  WagmiConfig,
+  configureChains,
+  createConfig,
+  mainnet,
+  sepolia,
+} from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 
@@ -20,12 +26,12 @@ export default function App(props: AppProps) {
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
 
   const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [sepolia],
+    [mainnet, sepolia],
     [publicProvider()],
   );
 
   const { connectors } = getDefaultWallets({
-    appName: "RainbowKit App",
+    appName: "Paradigma NFT",
     projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECTID as string,
     chains,
   });
