@@ -9,13 +9,7 @@ import {
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import Layout from "./layout";
-import {
-  WagmiConfig,
-  configureChains,
-  createConfig,
-  mainnet,
-  sepolia,
-} from "wagmi";
+import { WagmiConfig, configureChains, createConfig, sepolia } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { RainbowKitProvider, getDefaultWallets } from "@rainbow-me/rainbowkit";
 
@@ -26,7 +20,7 @@ export default function App(props: AppProps) {
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
 
   const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [mainnet, sepolia],
+    [sepolia],
     [publicProvider()],
   );
 
